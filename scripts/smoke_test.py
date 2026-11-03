@@ -98,6 +98,18 @@ def smoke_test(executable):
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait(timeout=5)
+                if os.name == "nt":
+                    # Windows can retain the executable mapping briefly after
+                    # taskkill returns; wait for it before removing the temp tree.
+                    cleanup_deadline = time.monotonic() + 15
+                    while True:
+                        try:
+                            frozen.unlink()
+                            break
+                        except PermissionError:
+                            if time.monotonic() >= cleanup_deadline:
+                                raise
+                            time.sleep(0.2)
 
 
 if __name__ == "__main__":
