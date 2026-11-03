@@ -1,3 +1,4 @@
+from importlib.metadata import version
 from typing import Annotated
 
 from fastapi import FastAPI
@@ -23,7 +24,7 @@ class ArrangeRequest(BaseModel):
 
 
 def create_app(settings=None, service=None):
-    app = FastAPI(title="Annotation Arranger", version="0.1.0")
+    app = FastAPI(title="Annotation Arranger", version=version("annotation-arranger"))
     arranger = service or Arranger(settings or Settings.from_env())
 
     @app.exception_handler(ServiceError)

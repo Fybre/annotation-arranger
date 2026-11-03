@@ -73,7 +73,17 @@ def smoke_test(executable):
                 print(log.read())
                 raise
             finally:
-                process.terminate()
+                if os.name == "nt":
+                    # The one-file bootloader owns a child process. Killing only
+                    # the parent leaves the server/log file open on Windows.
+                    subprocess.run(
+                        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                        check=False,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                else:
+                    process.terminate()
                 try:
                     process.wait(timeout=15)
                 except subprocess.TimeoutExpired:

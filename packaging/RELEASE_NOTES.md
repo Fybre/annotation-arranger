@@ -11,7 +11,7 @@ offline PDF-engine test. Service configuration and setup instructions are includ
 - Windows package includes a checksum-verified WinSW service wrapper.
 
 Builds are unsigned. Linux builds target glibc-based systems (built on Ubuntu 22.04);
-macOS builds are produced on macOS 14 ARM64 / macOS 15 Intel; Windows on Server 2022 x64.
+macOS builds are produced on macOS 15 ARM64 / macOS 15 Intel; Windows on Server 2022 x64.
 The default tenant/category are craigdemo/392; configure these for your deployment.
 Supply a Therefore token in each POST. No credentials or customer PDFs are bundled.
 

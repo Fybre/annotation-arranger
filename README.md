@@ -21,7 +21,7 @@ GitHub Actions builds and tests natively on these runners:
 | Linux x64 | Ubuntu 22.04 |
 | Linux ARM64 | Ubuntu 22.04 ARM |
 | macOS Intel | macOS 15 Intel |
-| macOS Apple Silicon | macOS 14 ARM |
+| macOS Apple Silicon | macOS 15 ARM |
 
 Every build runs the unit tests, packages with PyInstaller, and exercises the frozen
 executable outside the checkout: PDF alignment/flattening, TLS certificate loading,
@@ -50,8 +50,7 @@ uv run python scripts/release.py
 This creates/pushes the matching `v<version>` tag. GitHub builds the five archives, creates
 a draft release, uploads all assets plus `SHA256SUMS.txt`, then publishes it. GitHub's
 automatic token is sufficient; no Therefore credentials or separate release token are
-required. Workflow actions are pinned to commits. Builds on a private repository use
-the account's GitHub Actions allocation.
+required. Workflow actions are pinned to commits. Standard GitHub-hosted runners can build the public repository without Docker.
 
 Uploaded invoices, live tenant snapshots, backups, tokens, temporary tunnel state and
 local build outputs are excluded from Git. Tests use a generated synthetic PDF under

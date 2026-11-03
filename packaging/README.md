@@ -75,7 +75,7 @@ and managed separately. No tunnel credentials are included here.
 ## Compatibility and provenance
 
 Choose the archive for your OS and CPU. Linux requires glibc (not Alpine/musl); builds are
-tested on Ubuntu 22.04. macOS ARM64 is tested on macOS 14; macOS Intel on macOS 15;
+tested on Ubuntu 22.04. macOS ARM64 is tested on macOS 15; macOS Intel on macOS 15;
 Windows x64 on Server 2022. Older versions are not verified. Binaries are unsigned;
 macOS may require approval in Privacy & Security after downloading.
 `BUILD-INFO.json` identifies the source commit and runtime. Verify archives using release
