@@ -11,7 +11,9 @@ from .errors import ServiceError
 class Therefore:
     def __init__(self, base_url, tenant, token, username=None, deadline_seconds=120):
         self.deadline = time.monotonic() + deadline_seconds
-        headers = {"Content-Type": "application/json; charset=utf-8", "TenantName": tenant}
+        headers = {"Content-Type": "application/json; charset=utf-8"}
+        if tenant:
+            headers["TenantName"] = tenant
         if username:
             encoded = base64.b64encode(f"{username}:{token}".encode()).decode()
             headers.update(Authorization=f"Basic {encoded}", UseToken="1")

@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import shutil
 import socket
 import subprocess
 import tempfile
@@ -17,13 +18,21 @@ def smoke_test(executable):
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONHOME", "PYTHONPATH")}
     with tempfile.TemporaryDirectory(prefix="arranger-smoke-") as temp:
         subprocess.run([executable, "--self-test"], check=True, cwd=temp, env=env, timeout=120)
+        # Exercise automatic .env discovery in the actual frozen executable.
+        install = Path(temp) / "install"
+        install.mkdir()
+        frozen = install / Path(executable).name
+        shutil.copy2(executable, frozen)
+        (install / ".env").write_text(
+            "THEREFORE_BASE_URL=https://example.test/restun\nBACKUP_ENABLED=false\nPORT=0\n"
+        )
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
         with open(Path(temp) / "service.log", "w+") as log:
             process = subprocess.Popen(
                 [
-                    executable,
+                    str(frozen),
                     "--host",
                     "127.0.0.1",
                     "--port",

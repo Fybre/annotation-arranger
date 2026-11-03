@@ -1,5 +1,6 @@
 import base64
 import copy
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -18,7 +19,7 @@ class FakeTherefore:
     def __init__(self):
         self.document_data = {
             "IndexData": {
-                "CategoryNo": 392,
+                "CategoryNo": 42,
                 "VersionNo": 3,
                 "LastChangeTimeISO8601": "2026-11-03T00:00:00Z",
                 "IndexDataItems": [{"StringIndexData": {"DataValue": "test"}}],
@@ -73,7 +74,7 @@ class FakeTherefore:
 @pytest.fixture
 def service(tmp_path):
     fake = FakeTherefore()
-    settings = Settings("https://example.test/restun", "test", frozenset({392}), tmp_path)
+    settings = Settings("https://example.test/restun", "test", backup_dir=tmp_path)
     return Arranger(settings, lambda *args: fake), fake
 
 
@@ -97,12 +98,11 @@ def test_preview_never_checks_out_or_saves(service):
     assert fake.calls == []
 
 
-def test_category_and_existing_checkout_block_all_writes(service):
+def test_any_category_is_allowed_but_existing_checkout_blocks_writes(service):
     arranger, fake = service
     fake.document_data["IndexData"]["CategoryNo"] = 999
-    with pytest.raises(ServiceError, match="category"):
-        arranger.process(123, "secret")
-    fake.document_data["IndexData"]["CategoryNo"] = 392
+    assert arranger.process(123, "secret")["status"] == "updated"
+    fake.calls.clear()
     fake.document_data["CheckOutStatus"]["CheckOutState"] = 1
     with pytest.raises(ServiceError, match="checked out"):
         arranger.process(123, "secret")
@@ -229,4 +229,21 @@ def test_flatten_requires_boolean(service):
         "/arrange-annotations", json={"docNo": 123, "token": "secret", "flatten": "false"}
     )
     assert response.status_code == 422
+    assert fake.calls == []
+
+
+def test_disabled_backups_do_not_write_local_files(service, tmp_path):
+    arranger, _fake = service
+    arranger.settings = replace(arranger.settings, backup_dir=None)
+    assert arranger.process(123, "secret")["status"] == "updated"
+    assert not list(tmp_path.iterdir())
+
+
+def test_enabled_backup_failure_blocks_remote_save(service, tmp_path):
+    arranger, fake = service
+    blocked = tmp_path / "not-a-directory"
+    blocked.write_text("blocked")
+    arranger.settings = replace(arranger.settings, backup_dir=blocked)
+    with pytest.raises(ServiceError, match="before saving"):
+        arranger.process(123, "secret")
     assert fake.calls == []

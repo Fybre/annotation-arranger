@@ -8,13 +8,6 @@
   </array>
   <key>WorkingDirectory</key><string>/opt/annotation-arranger</string>
   <key>UserName</key><string>annotation-arranger</string>
-  <key>EnvironmentVariables</key><dict>
-    <key>HOST</key><string>127.0.0.1</string>
-    <key>PORT</key><string>8765</string>
-    <key>THEREFORE_TENANT</key><string>craigdemo</string>
-    <key>ALLOWED_CATEGORIES</key><string>392</string>
-    <key>BACKUP_DIR</key><string>/opt/annotation-arranger/var/backups</string>
-  </dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>ThrottleInterval</key><integer>5</integer>

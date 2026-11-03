@@ -1,6 +1,6 @@
 [project]
 name = "annotation-arranger"
-version = "0.1.1"
+version = "0.1.2"
 description = "Synchronous Therefore PDF stamp arrangement service"
 requires-python = ">=3.12"
 dependencies = [
@@ -9,6 +9,7 @@ dependencies = [
   "httpx==0.28.1",
   "pypdf==6.21.4",
   "pikepdf==10.17.0",
+  "python-dotenv==1.2.4",
 ]
 
 [dependency-groups]

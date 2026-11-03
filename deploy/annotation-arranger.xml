@@ -5,11 +5,6 @@
   <executable>C:\annotation-arranger\.venv\Scripts\python.exe</executable>
   <arguments>-m arranger</arguments>
   <workingdirectory>C:\annotation-arranger</workingdirectory>
-  <env name="HOST" value="127.0.0.1" />
-  <env name="PORT" value="8765" />
-  <env name="THEREFORE_TENANT" value="craigdemo" />
-  <env name="ALLOWED_CATEGORIES" value="392" />
-  <env name="BACKUP_DIR" value="C:\annotation-arranger\var\backups" />
   <startmode>Automatic</startmode>
   <onfailure action="restart" delay="5 sec" />
   <stoptimeout>150 sec</stoptimeout>

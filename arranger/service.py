@@ -4,38 +4,11 @@ import json
 import os
 import threading
 import time
-from dataclasses import dataclass
-from pathlib import Path
 
+from .config import Settings
 from .errors import ServiceError
 from .pdf import arrange_pdf
 from .therefore import Therefore, stream_bytes
-
-
-@dataclass(frozen=True)
-class Settings:
-    base_url: str
-    tenant: str
-    categories: frozenset[int]
-    backup_dir: Path
-    max_bytes: int = 20 * 1024 * 1024
-    deadline_seconds: int = 120
-
-    @classmethod
-    def from_env(cls):
-        url = os.getenv(
-            "THEREFORE_BASE_URL",
-            "https://craigdemo.thereforeonline.com/theservice/v0001/restun",
-        )
-        if not url.startswith("https://"):
-            raise ValueError("THEREFORE_BASE_URL must use HTTPS")
-        return cls(
-            url,
-            os.getenv("THEREFORE_TENANT", "craigdemo"),
-            frozenset(int(n) for n in os.getenv("ALLOWED_CATEGORIES", "392").split(",")),
-            Path(os.getenv("BACKUP_DIR", "var/backups")).resolve(),
-            deadline_seconds=int(os.getenv("PROCESSING_TIMEOUT_SECONDS", "120")),
-        )
 
 
 def fingerprint(document):
@@ -44,19 +17,19 @@ def fingerprint(document):
 
 
 class Arranger:
-    def __init__(self, settings, client_factory=Therefore):
+    def __init__(self, settings: Settings, client_factory=Therefore):
         self.settings = settings
         self.client_factory = client_factory
         # Fixed lock stripes avoid an unbounded dictionary of document numbers.
         self.locks = [threading.Lock() for _ in range(64)]
 
     def _check_document(self, document):
-        if document["IndexData"]["CategoryNo"] not in self.settings.categories:
-            raise ServiceError("category_not_allowed", "Document category is not enabled.", 403)
         if document.get("CheckOutStatus", {}).get("CheckOutState", 0) != 0:
             raise ServiceError("document_checked_out", "Document is already checked out.", 409)
 
     def _backup(self, doc_no, version, originals):
+        if self.settings.backup_dir is None:
+            return
         folder = self.settings.backup_dir / str(doc_no) / str(version)
         folder.mkdir(parents=True, exist_ok=True, mode=0o700)
         entries = []
@@ -109,7 +82,7 @@ class Arranger:
                 username,
                 self.settings.deadline_seconds,
             )
-            # Check category and checkout before downloading document content.
+            # Check checkout status before downloading document content.
             initial = client.document(doc_no)
             self._check_document(initial)
             document = client.document(doc_no, data=True)
@@ -165,7 +138,8 @@ class Arranger:
                 "streams": details,
             }
             if changes and not dry_run:
-                self._backup(doc_no, result["version"], originals)
+                if self.settings.backup_dir is not None:
+                    self._backup(doc_no, result["version"], originals)
                 checkout = client.post("CheckOutDocument", {"DocNo": doc_no})
                 if not checkout.get("CheckOutSucceeded"):
                     raise ServiceError("checkout_failed", "Could not check out the document.", 409)

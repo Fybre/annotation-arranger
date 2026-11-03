@@ -7,12 +7,14 @@ offline PDF-engine test. Service configuration and setup instructions are includ
 - Synchronous Therefore document retrieval, editing, saving, and verification.
 - Stamp alignment: left, right, top, bottom, or auto.
 - Flatten all supported PDF annotations, alone or after alignment.
-- Dry runs, original-file backups, checkout protection, and no-op retries.
+- Dry runs, optional original-file backups, checkout protection, and no-op retries.
 - Windows package includes a checksum-verified WinSW service wrapper.
 
 Builds are unsigned. Linux builds target glibc-based systems (built on Ubuntu 22.04);
 macOS builds are produced on macOS 15 ARM64 / macOS 15 Intel; Windows on Server 2022 x64.
-The default tenant/category are craigdemo/392; configure these for your deployment.
+Configure your Therefore server/tenant in the automatically loaded `.env` beside the
+executable. No server or tenant is built in. All accessible categories are supported.
+Local backups are disabled by default; set `BACKUP_ENABLED=true` to enable them.
 Supply a Therefore token in each POST. No credentials or customer PDFs are bundled.
 
 Verify downloads using `SHA256SUMS.txt`. All builds run offline PDF-engine and HTTP-server

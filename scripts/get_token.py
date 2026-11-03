@@ -11,7 +11,7 @@ import httpx
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tenant", default="craigdemo")
+    parser.add_argument("--tenant", required=True)
     parser.add_argument("--username", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()

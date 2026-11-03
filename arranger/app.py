@@ -65,6 +65,3 @@ def create_app(settings=None, service=None):
         )
 
     return app
-
-
-app = create_app()

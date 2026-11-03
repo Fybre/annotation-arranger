@@ -136,7 +136,7 @@ def main():
     shutil.copy2(executable, folder / executable.name)
     shutil.copy2(ROOT / "packaging/README.md", folder / "README.md")
     shutil.copy2(ROOT / ".env.example", folder / "settings.example.env")
-    (folder / "var" / "backups").mkdir(parents=True)
+    (folder / "var").mkdir(parents=True)
     service_files(folder, target)
     notices(folder)
     commit = subprocess.run(
