@@ -247,3 +247,86 @@ def test_enabled_backup_failure_blocks_remote_save(service, tmp_path):
     with pytest.raises(ServiceError, match="before saving"):
         arranger.process(123, "secret")
     assert fake.calls == []
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_console_debug_events_and_secret_redaction(service, capsys, enabled):
+    arranger, fake = service
+    arranger.settings = replace(arranger.settings, debug_logging=enabled)
+    with TestClient(create_app(service=arranger)) as client:
+        response = client.post(
+            "/arrange-annotations", json={"docNo": 123, "token": "TOP-SECRET-TOKEN"}
+        )
+        assert response.status_code == 200
+        assert (
+            client.post(
+                "/arrange-annotations?token=QUERY-SECRET",
+                json={"token": "INVALID-SECRET"},
+            ).status_code
+            == 422
+        )
+        fake.fail_save = True
+        # Reset content so a second write is attempted.
+        fake.document_data["StreamsInfo"][0]["StreamDataBase64JSON"] = base64.b64encode(
+            SAMPLE.read_bytes()
+        ).decode()
+        assert (
+            client.post(
+                "/arrange-annotations", json={"docNo": 123, "token": "ERROR-SECRET"}
+            ).status_code
+            == 504
+        )
+    output = capsys.readouterr().out
+    for secret in [
+        "TOP-SECRET-TOKEN",
+        "QUERY-SECRET",
+        "INVALID-SECRET",
+        "ERROR-SECRET",
+        "invoice.pdf",
+    ]:
+        assert secret not in output
+    if enabled:
+        for event in [
+            "Service started",
+            "HTTP request started",
+            "Processing PDF",
+            "Backup completed",
+            "Saving document",
+            "Verifying saved bytes",
+            "Processing completed",
+            "status=200",
+            "Request validation failed",
+            "status=422",
+            "code=save_outcome_unknown",
+            "Service stopped",
+        ]:
+            assert event in output
+        import re
+
+        assert re.search(r"request=[0-9a-f]{12} .*Processing PDF", output)
+    else:
+        assert output == ""
+
+
+def test_therefore_debug_logs_status_without_payloads(capsys):
+    import httpx
+
+    from arranger.logging import configure_logging
+
+    configure_logging(True)
+    client = Therefore("https://example.test/restun", "test", "AUTH-SECRET")
+    client.client.close()
+    client.client = httpx.Client(
+        base_url="https://example.test/restun/",
+        transport=httpx.MockTransport(lambda request: httpx.Response(401, text="UPSTREAM-SECRET")),
+    )
+    try:
+        with pytest.raises(ServiceError):
+            client.post("GetDocument", {"DocNo": 123, "private": "BODY-SECRET"})
+    finally:
+        client.close()
+        configure_logging(False)
+    output = capsys.readouterr().out
+    assert "operation=GetDocument status=401" in output
+    for secret in ["AUTH-SECRET", "BODY-SECRET", "UPSTREAM-SECRET"]:
+        assert secret not in output

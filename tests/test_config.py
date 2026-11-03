@@ -13,6 +13,7 @@ def clean_config_environment(monkeypatch):
         "THEREFORE_BASE_URL",
         "THEREFORE_TENANT",
         "BACKUP_ENABLED",
+        "DEBUG_LOGGING",
         "BACKUP_DIR",
         "HOST",
         "PORT",
@@ -32,6 +33,7 @@ def test_automatic_dotenv_loading_and_backup_disabled_by_default(tmp_path, monke
     assert settings.tenant == "example"
     assert settings.port == 8877
     assert settings.backup_dir is None
+    assert settings.debug_logging is False
     assert not (tmp_path / "var").exists()
 
 
@@ -90,6 +92,7 @@ def test_missing_configuration_has_no_tenant_specific_fallback(tmp_path, monkeyp
         {"THEREFORE_BASE_URL": "https://user:pass@example.test/restun"},
         {"THEREFORE_BASE_URL": "https://example.test/restun?token=bad"},
         {"BACKUP_ENABLED": "typo"},
+        {"DEBUG_LOGGING": "typo"},
         {"PORT": "0"},
         {"PROCESSING_TIMEOUT_SECONDS": "-1"},
     ],
@@ -114,3 +117,14 @@ def test_cloud_tenant_can_be_inferred_and_on_premise_tenant_is_optional(tmp_path
         assert "TenantName" not in client.client.headers
     finally:
         client.close()
+
+
+@pytest.mark.parametrize(
+    "value,expected", [("true", True), ("false", False), ("1", True), ("off", False)]
+)
+def test_debug_logging_config(tmp_path, monkeypatch, value, expected):
+    path = tmp_path / ".env"
+    path.write_text(f"THEREFORE_BASE_URL=https://example.test/restun\nDEBUG_LOGGING={value}\n")
+    assert Settings.from_env(path).debug_logging is expected
+    monkeypatch.setenv("DEBUG_LOGGING", "false")
+    assert Settings.from_env(path).debug_logging is False

@@ -95,6 +95,7 @@ THEREFORE_TENANT=your-tenant
 HOST=127.0.0.1
 PORT=8765
 BACKUP_ENABLED=false
+DEBUG_LOGGING=false
 BACKUP_DIR=var/backups
 PROCESSING_TIMEOUT_SECONDS=120
 ```
@@ -349,3 +350,9 @@ authentication tokens are supplied by the caller; CI uses no tenant credentials 
 API references: [GetJWTToken](https://therefore.net/help/Online/en-us/AR/SDK/WebAPI/the_webapi_operation_getjwttoken.html),
 [connection tokens](https://therefore.net/help/2026/en-us/AR/SDK/WebAPI/the_webapi_securitytokens.html),
 [UpdateDocument](https://therefore.net/help/Online/en-us/AR/SDK/WebAPI/the_webapi_operation_updatedocument.html).
+
+Set `DEBUG_LOGGING=true` in `.env` and restart to log all HTTP requests, document
+processing stages, Therefore API operations/statuses, backups, saves, verification, and
+errors to the console. Each request has a correlation ID and timing. Background services
+capture this output in their configured logs. Default: `false`. Tokens, credentials,
+request/response bodies, filenames, and document contents are never logged.

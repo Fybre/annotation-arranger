@@ -23,6 +23,7 @@ class Settings:
     backup_dir: Path | None = None
     max_bytes: int = 20 * 1024 * 1024
     deadline_seconds: int = 120
+    debug_logging: bool = False
     host: str = "127.0.0.1"
     port: int = 8765
 
@@ -54,6 +55,9 @@ class Settings:
         enabled = values.get("BACKUP_ENABLED", "false").strip().lower()
         if enabled not in ("true", "false", "1", "0", "yes", "no", "on", "off"):
             raise ValueError("BACKUP_ENABLED must be true or false.")
+        debug = values.get("DEBUG_LOGGING", "false").strip().lower()
+        if debug not in ("true", "false", "1", "0", "yes", "no", "on", "off"):
+            raise ValueError("DEBUG_LOGGING must be true or false.")
         backup_dir = None
         if enabled in ("true", "1", "yes", "on"):
             backup_dir = Path(values.get("BACKUP_DIR", "var/backups").strip() or "var/backups")
@@ -74,6 +78,7 @@ class Settings:
             tenant,
             backup_dir,
             deadline_seconds=timeout,
+            debug_logging=debug in ("true", "1", "yes", "on"),
             host=values.get("HOST", "127.0.0.1"),
             port=port,
         )

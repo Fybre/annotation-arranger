@@ -1,3 +1,6 @@
+import time
+import uuid
+from contextlib import asynccontextmanager
 from importlib.metadata import version
 from typing import Annotated
 
@@ -7,6 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 from .errors import ServiceError
+from .logging import configure_logging, logger, request_id
 from .pdf import Alignment
 from .service import Arranger, Settings
 
@@ -24,11 +28,47 @@ class ArrangeRequest(BaseModel):
 
 
 def create_app(settings=None, service=None):
-    app = FastAPI(title="Annotation Arranger", version=version("annotation-arranger"))
+    @asynccontextmanager
+    async def lifespan(app):
+        logger.debug("Service started version=%s", version("annotation-arranger"))
+        try:
+            yield
+        finally:
+            logger.debug("Service stopped")
+
+    app = FastAPI(
+        title="Annotation Arranger", version=version("annotation-arranger"), lifespan=lifespan
+    )
     arranger = service or Arranger(settings or Settings.from_env())
+
+    configure_logging(arranger.settings.debug_logging)
+
+    @app.middleware("http")
+    async def log_request(request, call_next):
+        context = request_id.set(uuid.uuid4().hex[:12])
+        start = time.monotonic()
+        logger.debug("HTTP request started method=%s", request.method)
+        try:
+            response = await call_next(request)
+            route = request.scope.get("route")
+            logger.debug(
+                "HTTP request completed method=%s route=%s status=%s elapsedMs=%s",
+                request.method,
+                getattr(route, "path", "<unmatched>"),
+                response.status_code,
+                round((time.monotonic() - start) * 1000),
+            )
+            return response
+        except Exception as exc:
+            # Exception messages/traceback values may include upstream payloads or secrets.
+            logger.error("HTTP request failed exceptionType=%s", type(exc).__name__)
+            raise
+        finally:
+            request_id.reset(context)
 
     @app.exception_handler(ServiceError)
     async def service_error(request, exc):
+        logger.warning("Request rejected code=%s status=%s", exc.code, exc.status)
         return JSONResponse(
             status_code=exc.status,
             content={"status": "error", "code": exc.code, "message": exc.message},
@@ -36,6 +76,7 @@ def create_app(settings=None, service=None):
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(request, exc):
+        logger.warning("Request validation failed status=422")
         # FastAPI's default response echoes invalid input, potentially including a token.
         return JSONResponse(
             status_code=422,

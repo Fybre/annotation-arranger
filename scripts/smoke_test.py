@@ -24,7 +24,7 @@ def smoke_test(executable):
         frozen = install / Path(executable).name
         shutil.copy2(executable, frozen)
         (install / ".env").write_text(
-            "THEREFORE_BASE_URL=https://example.test/restun\nBACKUP_ENABLED=false\nPORT=0\n"
+            "THEREFORE_BASE_URL=https://example.test/restun\nBACKUP_ENABLED=false\nDEBUG_LOGGING=true\nPORT=0\n"
         )
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
@@ -110,6 +110,13 @@ def smoke_test(executable):
                             if time.monotonic() >= cleanup_deadline:
                                 raise
                             time.sleep(0.2)
+
+            log.flush()
+            log.seek(0)
+            output = log.read()
+            assert "Debug logging enabled" in output
+            assert "HTTP request completed" in output
+            assert "Request validation failed" in output
 
 
 if __name__ == "__main__":

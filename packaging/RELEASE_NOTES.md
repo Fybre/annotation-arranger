@@ -19,3 +19,6 @@ Supply a Therefore token in each POST. No credentials or customer PDFs are bundl
 
 Verify downloads using `SHA256SUMS.txt`. All builds run offline PDF-engine and HTTP-server
 smoke tests outside the source checkout before release publication.
+
+Set `DEBUG_LOGGING=true` in `.env` for console diagnostics covering requests, PDF
+processing, Therefore operations, saves, verification, and errors, without tokens or payloads.
