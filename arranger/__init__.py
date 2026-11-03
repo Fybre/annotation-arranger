@@ -1,0 +1,1 @@
+"""Therefore stamp arrangement service."""

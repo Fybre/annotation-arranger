@@ -1,0 +1,129 @@
+%PDF-1.3
+%‚„œ”
+1 0 obj
+<<
+/Producer (pypdf)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 1
+/Kids [ 4 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 595.2756 841.8898 ]
+/Parent 2 0 R
+/Contents 6 0 R
+/Annots [ 8 0 R 10 0 R ]
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+6 0 obj
+<<
+/Length 114
+>>
+stream
+BT /F1 16 Tf 40 760 Td (Synthetic test invoice) Tj 0 -30 Td /F1 12 Tf (Generated example - no customer data) Tj ET
+endstream
+endobj
+7 0 obj
+<<
+/Type /XObject
+/Subtype /Form
+/BBox [ 0.0 0.0 84 29 ]
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+/Length 82
+>>
+stream
+q 0 .5 0 RG 1 w .5 .5 83 28 re S BT /F1 10 Tf 0 .5 0 rg 7 11 Td (APPROVED) Tj ET Q
+endstream
+endobj
+8 0 obj
+<<
+/Type /Annot
+/Subtype /Stamp
+/Rect [ 255.6378 406.8347 339.6378 435.8347 ]
+/F 4
+/NM (approved)
+/M (D\07220260101000000Z)
+/AP <<
+/N 7 0 R
+>>
+>>
+endobj
+9 0 obj
+<<
+/Type /XObject
+/Subtype /Form
+/BBox [ 0.0 0.0 84 29 ]
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+/Length 83
+>>
+stream
+q 0 .5 0 RG 1 w .5 .5 83 28 re S BT /F1 10 Tf 0 .5 0 rg 7 11 Td (COMPLETED) Tj ET Q
+endstream
+endobj
+10 0 obj
+<<
+/Type /Annot
+/Subtype /Stamp
+/Rect [ 255.6378 406.8347 339.6378 435.8347 ]
+/F 4
+/NM (completed)
+/M (D\07220260101000000Z)
+/AP <<
+/N 9 0 R
+>>
+>>
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000113 00000 n 
+0000000162 00000 n 
+0000000329 00000 n 
+0000000399 00000 n 
+0000000564 00000 n 
+0000000789 00000 n 
+0000000950 00000 n 
+0000001176 00000 n 
+trailer
+<<
+/Size 11
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+1339
+%%EOF

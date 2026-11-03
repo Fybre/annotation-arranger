@@ -1,0 +1,85 @@
+name: Build and release executables
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: windows-x64
+            runner: windows-2022
+            arch: x64
+          - target: linux-x64
+            runner: ubuntu-22.04
+            arch: x64
+          - target: linux-arm64
+            runner: ubuntu-22.04-arm
+            arch: arm64
+          - target: macos-x64
+            runner: macos-15-intel
+            arch: x64
+          - target: macos-arm64
+            runner: macos-14
+            arch: arm64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.arch }}
+      - run: python -m pip install uv==0.10.9
+      - run: uv sync --locked --group build
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - run: uv run ruff check arranger scripts tests packaging/entrypoint.py
+      - run: uv run pytest -q
+      - name: Build executable, smoke test, and package
+        env:
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+          BUILD_TARGET: ${{ matrix.target }}
+        shell: bash
+        run: |
+          if [ -n "$RELEASE_TAG" ]; then
+            uv run python scripts/build_release.py --target "$BUILD_TARGET" --tag "$RELEASE_TAG"
+          else
+            uv run python scripts/build_release.py --target "$BUILD_TARGET"
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ matrix.target }}
+          path: dist/releases/*
+          if-no-files-found: error
+          retention-days: 14
+  publish:
+    name: Publish verified release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+      - name: Verify checksums and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python scripts/publish_release.py --tag "$RELEASE_TAG" --assets release-assets

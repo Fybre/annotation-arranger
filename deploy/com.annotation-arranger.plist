@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.annotation-arranger</string>
+  <key>ProgramArguments</key><array>
+    <string>/opt/annotation-arranger/.venv/bin/python</string>
+    <string>-m</string><string>arranger</string>
+  </array>
+  <key>WorkingDirectory</key><string>/opt/annotation-arranger</string>
+  <key>UserName</key><string>annotation-arranger</string>
+  <key>EnvironmentVariables</key><dict>
+    <key>HOST</key><string>127.0.0.1</string>
+    <key>PORT</key><string>8765</string>
+    <key>THEREFORE_TENANT</key><string>craigdemo</string>
+    <key>ALLOWED_CATEGORIES</key><string>392</string>
+    <key>BACKUP_DIR</key><string>/opt/annotation-arranger/var/backups</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>5</integer>
+  <key>ExitTimeOut</key><integer>150</integer>
+  <key>StandardOutPath</key><string>/opt/annotation-arranger/var/service.log</string>
+  <key>StandardErrorPath</key><string>/opt/annotation-arranger/var/service-error.log</string>
+</dict></plist>

@@ -1,0 +1,25 @@
+[Unit]
+Description=Therefore Annotation Arranger
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=annotation-arranger
+WorkingDirectory=/opt/annotation-arranger
+ExecStart=/opt/annotation-arranger/.venv/bin/python -m arranger
+Environment=HOST=127.0.0.1
+Environment=PORT=8765
+Environment=THEREFORE_TENANT=craigdemo
+Environment=THEREFORE_BASE_URL=https://craigdemo.thereforeonline.com/theservice/v0001/restun
+Environment=ALLOWED_CATEGORIES=392
+Environment=BACKUP_DIR=/var/lib/annotation-arranger/backups
+StateDirectory=annotation-arranger
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=150
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
